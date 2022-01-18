@@ -74,4 +74,39 @@ promise2 = promise1.then(onFulfilled, onRejected);
   + 如果 onFulfilled 或 onRejected 返回值x，调用promise执行程序 [[Resolve]](promise2, x)
   + 如果 onFulfilled 或 onRejected 抛出异常，promise2 执行reject转变至失败态，原因为e
   + 如果 onFulfilled 不是函数且 promise1 状态为成功态，promise2 的值与promise1相同，并且也会转变为成功态，
-  + 如果 onRejected 不是函数且 promise1 状态为失败态，promise2 的原因与promise1相同，并且也会转变为失败态，
+  + 如果 onRejected 不是函数且 promise1 状态为失败态，promise2 的原因与promise1相同，并且也会转变为失败态。
+
+### promise解决程序
+
+promise 解决程序是一个抽象操作，它接收一个promise何一个值作为输入，通常表示为 `[[Resolve]](promise, x)`。如果x是一个thenable，尝试让promise使用x的状态，并假设x在某种程度上像一个promise。否则，它会用x值来解决promise。
+
+这种thenable特性使得promise的实现更具有通用性: 只需要暴露一个遵循Promise/A+规范的then方法即可。通过合理的then方法，能实现遵循promise/A+规范和不符合规范的实现共存。
+
+要运行 [[Resolve]](promise, x) ，需要执行下列步骤
++ 如果 promise 和 x 指向同一对象，返回 promise拒绝态，拒绝原因为TypeError 
++ 如果 x 是 promise，采用它的状态
+  + 如果x处于等待态，那么x必须保持等待状态，直到x转变为成功态或拒绝态
+  + 如果x处于成功态，返回成功态promise，值与x的值相同
+  + 如果x处于拒绝态，返回拒绝态promise，原因与x的原因相同
++ 否则，如果x是对象或函数
+  + 定义then=x.then
+  + 如果检索属性x.then抛出异常e，返回拒绝态promise，原因为e
+  + 如果then是函数，执行then.call(x, this)，参数为(resolvePromise, rejectPromise)
+    + 如果使用值y调用resolvePromise，执行[[Resolve]](promise, y)
+    + 如果使用原因r调用rejectPromise，返回拒绝态promise，原因为r
+    + **如果resolvePromise和rejectPromise都被调用，或者对同一个参数进行多次调用，那么第一次调用优先，以后的调用都会被忽略。**译者注：这里主要针对thenable，promise的状态一旦更改就不会再改变。
+    + 如果调用then方法抛出异常e: 如果resolvePromise和rejectPromise都被调用过，忽视它。否则返回拒绝态promise，原因为e
+  + 如果then不是函数，返回成功态promise，值为x
++ 如果 x 不是对象或者函数，返回成功态promise，值为x
+
+如果promise用一个循环的thenable链解决，由于[[Resolve]](promise, thenalbe)的递归特性，最终将导致[[Resolve]](promise, thenable)被再次调用，遵循上面的算法将会导致无限递归。规范中并没有强制要求处理这种情况，但也鼓励实现者检测这样的递归是否存在，并且用一个信息丰富的TypeError作为原因拒绝promise。[3.6]
+
+译者注：这里的循环thenable可能是指如下情况：
+
+const obj = {
+    then:function() { 
+      //...    
+    }
+}
+obj.then.then = obj.then
+ 

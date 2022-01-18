@@ -5,4 +5,4 @@ A fast online load identification algorithm based on V-I characteristics of high
 20220117
 
 ## 文章内容
-1. 用户操作约束 user operational constraints
+1. 用户操作约束 user operational constraints~
