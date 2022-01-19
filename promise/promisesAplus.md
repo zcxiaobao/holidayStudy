@@ -73,7 +73,7 @@ promise2 = promise1.then(onFulfilled, onRejected);
 ```
   + 如果 onFulfilled 或 onRejected 返回值x，调用promise执行程序 [[Resolve]](promise2, x)
   + 如果 onFulfilled 或 onRejected 抛出异常，promise2 执行reject转变至失败态，原因为e
-  + 如果 onFulfilled 不是函数且 promise1 状态为成功态，promise2 的值与promise1相同，并且也会转变为成功态，
+  + 如果 onFulfilled 不是函数且 promise1 状态为成功态，promise2 的值与 promise1 相同，并且也会转变为成功态，
   + 如果 onRejected 不是函数且 promise1 状态为失败态，promise2 的原因与promise1相同，并且也会转变为失败态。
 
 ### promise解决程序
