@@ -42,6 +42,13 @@ The apparent power continues to change during the appliance state transition.
 
 ### Trajectory extraction
 1. 在仪表采样频率受限制且原始数据含有噪声的情况下，对电流和电压数据进行处理
+2. 每个周期的Von、Voff、Ion、Ioff 的初始相位角必须相同
+Hermite插值 平滑窗口
+### Feature quantization
+This paper quantify ten V–I trajectory features to describe the shape of the trajectory and represent load features: (1) current span; (2) area; (3) area with loop direction; (4) asymmetry; (5) curvature of mean line; (6) self-intersection; (7) peak of middle segment; (8) shape of middle segment; (9) area of left and right segments; and (10) variation of instantaneous admittance. The specific quantization procedures are as follows:
 
-插值 平滑窗口
+本文通过量化10个V-I轨迹特征来描述轨迹的形状，并表示负载特征:(1)电流跨度;(2)区域;(3)环向区域;(4)不对称;(5)中线曲率;(6)自交;(7)中段峰;(8)中段形状;(9)左右段面积;(10)瞬时导纳的变化。具体量化步骤如下:
 
+#### Current span
+归一化，归一化后，根据电压的最大值和最小值将轨迹分为A和B两部分，分别为vmax (Vvmax, Ivmax)和vmin (Vvmin, Ivmin)。由于相移过程，vmax是轨迹的第一个点
+#### 
