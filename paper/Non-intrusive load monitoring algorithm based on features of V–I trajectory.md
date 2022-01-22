@@ -4,7 +4,7 @@ Non-intrusive load monitoring algorithm based on features of V–I trajectory
 ## 摘要
 The variation in the overall apparent power was used as the criterion of event detection, and the delta of the V–I trajectory was extracted by smoothing and interpolation.
 
-smoothing and interpolation 滤波和插值
+smoothing and interpolation 平滑和插值
 overall apparent power [总视在功率](https://baike.baidu.com/item/%E8%A7%86%E5%9C%A8%E5%8A%9F%E7%8E%87/1016909)
 
 视在功率是表示交流电器设备容量的量。等于电压有效值和电流有效值的乘积。它乘以功率因数等于有功功率。
