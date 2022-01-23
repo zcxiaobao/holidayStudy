@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>绘制点</title>
+  </head>
+  <body>
+    <canvas width="500" height="500" id="oCanvas"></canvas>
+    <script type="notjs" id="vertex">
+      void main() {
+        gl_Position = vec4(0,0,0,0);
+        gl_PointSize = 10.0;
+      }
+    </script>
+    <script type="notjs" id="fragment">
+      void main() {
+        gl_Position = vec4(0,0,0,0);
+        gl_PointSize = 10.0;
+      }
+    </script>
+    <script>
+      const oCanvas = document.getElementById("oCanvas");
+      const gl = oCanvas.getContext("webgl");
+      if (!gl) {
+        alert("不支持WebGL");
+      }
+    </script>
+  </body>
+</html>
