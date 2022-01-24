@@ -22,4 +22,18 @@ float gl_PointSize 表示点的尺寸(像素数)
 
 > gl_Postion必须被赋值，否则着色器无法正常工作。gl_PointSize不是必须的，不赋值默认值为1.0
 
-### 片元着色器
+### 片元着色器内置变量
+vec4 gl_FragColor 指定片元颜色(RGBA)
+
+### 创建着色器
+```js
+// 创建着色器
+gl.createShader(type)
+// type: gl.VERTEX_SHADER / gl.FRAGMENT_SHADER
+// 向着色器传入数据
+gl.shaderSource(shader, source)
+// 编辑着色器
+gl.compileShader(shader)
+```
+## gl.drawArrays(mode, first, count)
+- mode: gl.POINTS/点 gl.

@@ -10,14 +10,13 @@
     <canvas width="500" height="500" id="oCanvas"></canvas>
     <script type="notjs" id="vertex">
       void main() {
-        gl_Position = vec4(0,0,0,0);
+        gl_Position = vec4(0,0,0,1);
         gl_PointSize = 10.0;
       }
     </script>
     <script type="notjs" id="fragment">
       void main() {
-        gl_Position = vec4(0,0,0,0);
-        gl_PointSize = 10.0;
+        gl_FragColor = vec4(0,0,0,1);
       }
     </script>
     <script>
@@ -26,6 +25,42 @@
       if (!gl) {
         alert("不支持WebGL");
       }
+
+      function createShader(gl, type, source) {
+        var shader = gl.createShader(type);
+        console.log(source);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        // 判断编译的信息
+        const success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+        if (success) {
+          return shader;
+        }
+        console.log(gl.getShaderInfoLog(shader));
+      }
+      const vertexStr = document.getElementById("vertex").innerText;
+      const fragmentStr = document.getElementById("fragment").innerText;
+
+      const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexStr);
+      const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentStr);
+
+      function createProgram(gl, vertexShader, fragmentShader) {
+        const program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+
+        gl.linkProgram(program);
+
+        return program;
+      }
+
+      const program = createProgram(gl, vertexShader, fragmentShader);
+      gl.useProgram(program);
+
+      gl.clearColor(0, 0, 1, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT); // 颜色缓冲区
+
+      gl.drawArrays(gl.POINTS, 0, 1);
     </script>
   </body>
 </html>
