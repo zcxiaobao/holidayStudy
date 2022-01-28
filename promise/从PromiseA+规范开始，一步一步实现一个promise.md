@@ -10,13 +10,13 @@ promise 是异步编程的一种解决方案，广泛用在日常编程中。目
 
 promise 必定处于下列三种状态之一:
 
-- Pending 等待态: promise 的初始状态，可以朝 Fulfilled 完成态 和 Rejected 失败态转变
+- Pending 等待态: promise 的初始状态
 - Fulfilled 完成态: 代表 promise 已经完成
 - Rejected 失败态: 代表 promise 已经失败
 - 当 promise 处于 Pending 状态时，可以转变 Fulfilled 或者 Rejected
   > 当 promise 处于 Fulfilled 或 Rejected 时，状态不能再发生改变
 
-promise 中什么触发了状态的改变那？来看几个栗子:
+promise 中什么触发了状态的改变那？我们来看几个栗子:
 
 ```js
 // p1 什么都不执行且传入空函数
@@ -59,10 +59,10 @@ console.log("p6: ", p6);
 
 从输出结果我们可以发现:
 
-- 创建 promise 对象时，需传入一个执行函数(否则会报错，详见 p6)，执行函数会立即执行，
+- 创建 promise 对象时，需传入一个执行函数(否则会报错，详见 p6)，执行函数会立即执行
 - promise 的初始状态为 pending(见 p1)
-- 执行 resolve() 和 reject() 可以将 promise 的状态修改为 fulfilled 和 rejected(见 p2,p3)
-- 若 promise 中抛出错误，相当于执行 reject(见 p4)
+- 执行 resolve() 和 reject() 可以将 promise 的状态修改为 fulfilled 和 rejected (见 p2,p3)
+- 若 promise 中抛出错误，相当于执行 reject (见 p4)
 - promise 状态转变只能由 pending 开始(见 p5)
 
 学完这些，我们就可以来写第一版代码了。
@@ -79,14 +79,14 @@ const FULFILLED = "FULFILLED";
 const REJECTED = "REJECTED";
 ```
 
-2. promise 一般使用 new 来生成，且内部会有 value、reason、status 属性
+2. 定义 Promise 构造函数，添加必备属性
 
 Promises/A+ 规范中指出:
 
 - value 是任意的 JavaScript 合法值(包括 indefined)
 - reason 是用来表示 promise 为什么被拒绝的原因
 
-因此我们使用 ES6 class 定义一个最初的 Promise 类，value/reason 分别赋值为 undefined ，status 赋值为 PENDING
+因此我们使用 ES6 class 定义 Promise 类，value/reason 分别赋值为 undefined ，状态 status 初始为 PENDING
 
 ```js
 class Promise {
@@ -98,7 +98,7 @@ class Promise {
 }
 ```
 
-3. 声明 promise 时需要传入执行器 executor
+3. 定义 promise 时需要传入执行器 executor
 
 - executor 有两个参数，分别为 resolve，reject
 - executor 会立即执行
@@ -179,19 +179,16 @@ class Promise {
     try {
       executor(resolve, reject);
     } catch (e) {
+      // 当发生异常时，调用 reject 函数
       reject(e);
     }
   }
 }
 ```
 
-### 实现 then 方法——基础版
+### 实现 then 方法的基本功能
 
-then 方法的注意事项很多，因此，咱们边举案例边实现。
-
-### then 学习
-
-我们去 Promises/A+ ：A promise must provide a then method to access its current or eventual value or reason.(promise 必须提供一个 then 方法，这个方法用来访问当前或最后的值或原因)
+then 方法的注意事项比较多，咱们一起阅读规范一起举例说明一下。
 
 1. promise.then 接受两个参数:
 
@@ -199,8 +196,8 @@ then 方法的注意事项很多，因此，咱们边举案例边实现。
 promise.then(onFulfilled, onRejected);
 ```
 
-2. onFulfilled 和 onRejected 是可选参数，两者如果不是函数，则会**"忽略"**掉(，真的是简单的忽略掉吗？请看下文分解)
-3. 如果 onFulfilled 是一个函数，当 promise 状态为 fulfilled 时，调用 onFulfilled 函数，onRejected 类似，当 promise 状态为 rejeted 时调用。
+2. onFulfilled 和 onRejected 是可选参数，两者如果不是函数，则会**"忽略"**掉(真的是简单的忽略掉吗？请看下文分解)
+3. 如果 onFulfilled 是一个函数，当 promise 状态为 Fulfilled 时，调用 onFulfilled 函数，onRejected 类似，当 promise 状态为 Rejeted 时调用。
 
 我们继续来看几个案例:
 
@@ -249,7 +246,7 @@ p3.then(
 
 ![](./promise-then.png)
 
-通过上面的输出结果，我们可以初步分析出 then 的调用方法
+通过上面的输出结果，我们可以初步分析出 then 的调用逻辑
 
 - 执行 resolve 后，promise 状态改变为 fulfilled，onFulfilled 函数调用，参数值为 value。
 - 执行 reject 或 抛出错误，promise 状态改变为 rejected ，onRejected 函数调用，参数值为 reason。
@@ -298,47 +295,8 @@ class Promise {
 }
 ```
 
-到这里，就实现一个简易版的 promise，我们首先来测试一下，手写 promise 是否正确。
+代码写到这里，第一版 promise 的代码就实现完成了。我们使用上面案例来测试一下，目前手写 promise 是否能实现基本功能。
 
-```js
-const p1 = new Promise((resolve, reject) => {
-  resolve(1);
-});
-p1.then(
-  (v) => {
-    console.log("onFulfilled: ", v);
-  },
-  (r) => {
-    console.log("onRejected: ", r);
-  }
-);
-
-// 执行 reject
-const p2 = new Promise((resolve, reject) => {
-  reject(2);
-});
-p2.then(
-  (v) => {
-    console.log("onFulfilled: ", v);
-  },
-  (r) => {
-    console.log("onRejected: ", r);
-  }
-);
-
-// 抛出异常
-const p3 = new Promise((resolve, reject) => {
-  throw new Error("promise执行出现错误");
-});
-p3.then(
-  (v) => {
-    console.log("onFulfilled: ", v);
-  },
-  (r) => {
-    console.log("onRejected: ", r);
-  }
-);
-```
 
 输出结果如下:
 
@@ -374,20 +332,18 @@ success;
 success-- - 111;
 ```
 
-通过输出结果，我们可以将该条规范大白话一下:同一个 promise 可以注册多个 then 方法，then 方法回调的执行按照注册顺序。
+通过上面的案例，将该条规范总结:同一个 promise 可以注册多个 then 方法，then 方法回调的执行按照注册顺序。
 
-我们测试一下我们的手写 Promise，输出结果为
+我们测试一下第一版手写 Promise，输出结果为
 
 ```js
 success;
-success-- - 111;
+success--- 111;
 ```
-
-可见目前我们的手写暂无问题。
-
+第一版代码是可以满足当前规范的，~~~，放松一下，我们来继续实现。
 ## 处理异步逻辑——第二版
 
-文章刚开始我们就讲过，promise 是异步编程的一种解决方案，那我们来测试一下我们的手写 Promise
+文章刚开始我们就讲过，promise 是异步编程的一种解决方案，那我们来测试一下第一版 Promise 是否可以实现异步。
 
 ```js
 const p = new Promise((resolve, reject) => {
@@ -405,7 +361,7 @@ p.then((v) => {
 });
 ```
 
-没有任何输出，我们来分析一下为啥会出现这种情况。
+没有任何输出，失败了，没事，我们来分析一下为何没有任何输出。
 
 如果 Promise 内部存在异步调用，当执行到 then 函数时，此时由于 resolve/reject 处于异步回调之中，promise 的状态仍为 Pending，因此 onFulfilled 和 onRejected 都无法执行。
 
@@ -466,7 +422,7 @@ const reject = (reason) => {
   }
 };
 ```
-我们将目前所有的手写整合一下，测试是否可以实现异步逻辑
+我们来整理一下代码，形成手写 Promise 第二版
 ```js
 const PENDING = "PENDING";
 const FULFILLED = "FULFILLED";
@@ -520,7 +476,7 @@ class Promise {
 success
 success--111
 ```
-可见，我们已经可以成功实现异步逻辑的处理。
+第二版 Promise 已经可以成功支持异步逻辑了，撒花~~~ 休息一会，我们继续进行第三版的封装。
 
 
 ## 链式调用
@@ -575,13 +531,206 @@ const p1 = new Promise((resolve) => {
 p1.then(undefined, () => {throw Error('error')}).then().then().then().then().then(x=> console.log(x), (r)=> console.log(r))
 ```
 
+### 代码实现
+那我们就照着规范一步一步的实现它
+
+1. then 需要返回一个 promise，递归调用 Promise，在then中定义一个 promise 并返回
+```js
+then(onFulfilled, onRejected) {
+  if (this.status === FULFILLED) {
+    onFulfilled(this.value);
+  }
+  if (this.status === REJECTED) {
+    onRejected(this.reason);
+  }
+  if (this.status === PENDING) {
+    this.onFulfilledCallbacks.push(onFulfilled);
+    this.onRejectedCallbacks.push(onRejected);
+  }
+  // 返回 promise2
+  const promise2 = new Promise((resolve, reject)=> {})
+  return promise2;
+}
+```
+2. 如果 onFulfilled 或 onRejected 返回值 x ，则调用返回 promise2 的 resolve 函数。
+
+由于需要调用 promise2 deresolve函数，那说明 onFulfilled 和 onRejected 调用发生在 promise2 的executor中。
+
+难点在于如何处理 Pending 状态，当 promise 处于 Pending 状态时，我们将 onFulfilled 和 onRejected 函数先存储起来。但是链式调用需要 onFulfilled/onRejected 函数的返回值，因此我们不能简单的将函数存储起来。
+
+我们将函数封装成下面效果，然后存储起来。
+```js
+() => {
+  let x = onFulfilled(this.value);
+  resolve(x);
+}
+```
+因此目前的 then 方法:
+```js
+then(onFulfilled, onRejected) {
+  let promise2 = new Promise((resolve, reject) => {
+    if (this.status === FULFILLED) {
+      let x = onFulfilled(this.value);
+      resolve(x);
+    }
+    if (this.status === REJECTED) {
+      let x = onRejected(this.reason);
+      resolve(x);
+    }
+    if (this.status === PENDING) {
+      this.onFulfilledCallbacks.push(() => {
+        let x = onFulfilled(this.value);
+        resolve(x);
+      });
+      this.onRejectedCallbacks.push(() => {
+        let x = onRejected(this.reason);
+        resolve(x);
+      });
+    }
+  });
+  return promise2;
+}
+```
+3. 如果 onFulfilled 或 onRejected 抛出异常 e ，则 promise2 调用 reject(e)
+
+使用 try catch 捕捉函数执行，当出现异常，执行 reject(e)
+
+```js
+then(onFulfilled, onRejected) {
+  let p1 = new Promise((resolve, reject) => {
+    if (this.status === FULFILLED) {
+      try {
+        let x = onFulfilled(this.value);
+        resolve(x);
+      } catch (e) {
+        reject(e);
+      }
+    }
+    if (this.status === REJECTED) {
+      try {
+        let x = onRejected(this.reason);
+        resolve(x);
+      } catch (e) {
+        reject(e);
+      }
+    }
+    if (this.status === PENDING) {
+      // 添加订阅
+      this.onFulfilledCallbacks.push(() => {
+        try {
+          let x = onFulfilled(this.value);
+          resolve(x);
+        } catch (e) {
+          reject(e);
+        }
+      });
+      this.onRejectedCallbacks.push(() => {
+        try {
+          let x = onRejected(this.reason);
+          resolve(x);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
+  });
+  return p1;
+}
+```
+4. 处理 onFulfilled 和 onRejected 非函数情况。
+
+通过上面的案例，我们可以发现，当 onFulfilled 不是函数时，then方法将其的值传递下去；当 onRejected 不是函数时，then 方法同样会传递错误。
+
+我们如何才能连续传递值或者异常那？我们来看一下下面这两个函数，是否能满足要求
+
+```js
+x => x;
+e => throw e;
+```
+
+```js
+const PENDING = "PENDING";
+const FULFILLED = "FULFILLED";
+const REJECTED = "REJECTED";
+
+class Promise {
+  constructor(executor) {
+    this.value = undefined;
+    this.reason = undefined;
+    this.status = PENDING;
+    this.onFulfilledCallbacks = [];
+    this.onRejectedCallbacks = [];
+    // this指向问题
+    const resolve = (value) => {
+      if (this.status === PENDING) {
+        this.value = value;
+        this.status = FULFILLED;
+        this.onFulfilledCallbacks.forEach((cb) => cb(this.value));
+      }
+    };
+    const reject = (reason) => {
+      if (this.status === PENDING) {
+        this.reason = reason;
+        this.status = REJECTED;
+        this.onRejectedCallbacks.forEach((cb) => cb(this.reason));
+      }
+    };
+    try {
+      executor(resolve, reject);
+    } catch (e) {
+      reject(e);
+    }
+  }
+  then(onFulfilled, onRejected) {
+    onFulfilled = typeof onFulfilled === "function" ? onFulfilled : (v) => v;
+    onRejected =
+      typeof onRejected === "function"
+        ? onRejected
+        : (e) => {
+            throw e;
+          };
+    let promise2 = new Promise((resolve, reject) => {
+      if (this.status === FULFILLED) {
+        try {
+          let x = onFulfilled(this.value);
+          resolve(x);
+        } catch (e) {
+          reject(e);
+        }
+      }
+      if (this.status === REJECTED) {
+        try {
+          let x = onRejected(this.reason);
+          resolve(x);
+        } catch (e) {
+          reject(e);
+        }
+      }
+      if (this.status === PENDING) {
+        // 添加订阅
+        this.onFulfilledCallbacks.push(() => {
+          try {
+            let x = onFulfilled(this.value);
+            resolve(x);
+          } catch (e) {
+            reject(e);
+          }
+        });
+        this.onRejectedCallbacks.push(() => {
+          try {
+            let x = onRejected(this.reason);
+            resolve(x);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+    });
+    return promise2;
+  }
+}
+```
+
+## 实现resolvePromise
 
 
-
-## 异步处理——第二版代码
-
-## 链式调用——第三版代码
-
-##
-
-## 边缘处理——第四版代码
